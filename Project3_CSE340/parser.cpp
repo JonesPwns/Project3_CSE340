@@ -65,6 +65,9 @@ bool uninitialized_error_flag = false;
 string unreferenced_error = "";
 bool unreferenced_error_flag = false;
 
+string declaration_error = "";
+bool declaration_error_flag = false;
+
 int line_number = 1;
 
 LexicalAnalyzer lexer;
@@ -72,6 +75,11 @@ const string ERROR_MESSAGE = "Syntax Error";
 string reference_string = "";
 
 
+void print_declaration_error()
+{
+	//cout << "Printing varible info!\n";
+	cout << declaration_error << endl;
+}
 
 void print_variable_information()
 {
@@ -96,8 +104,11 @@ int main()
 		
 		parse_program();
 
-		
-		if (semantic_error_flag) 
+		if (declaration_error_flag)
+		{
+			print_declaration_error();
+		}
+		else if (semantic_error_flag) 
 		{
 			print_semantic_error();
 		}
@@ -124,6 +135,14 @@ void set_semantic_error(string error_name, string id, string rule)
 	semantic_error_flag = true;
 }
 
+
+
+
+void set_declaration_error(string error_name, string id, string rule)
+{
+	declaration_error = error_name + " " + id + " " + rule + "\n";
+	declaration_error_flag = true;
+}
 void set_uninitialized_error(string error_name, string id, string rule)
 {
 	uninitialized_error += error_name + " " + id + " " + rule + "\n";
@@ -211,7 +230,7 @@ void parse_scope()
 	// iterate through var_declared and make sure all of the declared var from this scope are in var_reference
 	for (auto it = current_scope->var__declared_at.cbegin(); it != current_scope->var__declared_at.cend(); ++it)
 	{
-		if (! current_scope->var__reference_table.count(it->first)) 
+		if (! current_scope->var__reference_table.count(it->first) && !current_scope->var_is_defined.count(it->first))
 		{
 			set_unreferenced_error(it->first);
 			//cout << it->first << " NOT USED, ARRRRMYGARGGGGG!!" << endl;
@@ -293,7 +312,7 @@ int lookup_type(string id, scope * scope_ptr)
 		if (scope_ptr->parent == NULL)
 		{
 			//semantic_error = "ERROR CODE 1.2 " + id + "\n";
-			set_semantic_error("ERROR CODE", "1.2", id);
+			set_declaration_error("ERROR CODE", "1.2", id);
 			//semantic_error_flag = true;
 			//print_semantic_error();
 			
@@ -577,7 +596,7 @@ void parse_stmt_list()
 
 void compare(int lhs_type, int rhs_type, int line_number) 
 {
-	if (semantic_error_flag) return;
+	if (semantic_error_flag || declaration_error_flag) return;
 	bool type_mismatch = false;
 	string error_code = "";
 
@@ -611,7 +630,7 @@ void compare(int lhs_type, int rhs_type, int line_number)
 			//cout << "C2 error" << endl;
 		}
 	}
-	else { cout << "umm" << endl; }
+	else { } //cout << "umm" << endl;
 	if (type_mismatch && !semantic_error_flag)
 	{
 		semantic_error =  "TYPE MISMATCH " + to_string(line_number) + " " +  error_code + "\n";
