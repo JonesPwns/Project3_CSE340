@@ -352,6 +352,11 @@ int type_check(int op, int type1, int type2, int line_number)
 				{
 					type = INT;
 				}
+				else 
+				{
+					if (!semantic_error_flag)
+						set_semantic_error("TYPE MISMATCH", to_string(line_number), "C3");
+				}
 			}
 			// I3 if both are ints, results in real 
 			else if (op == DIV)
@@ -360,10 +365,16 @@ int type_check(int op, int type1, int type2, int line_number)
 				{
 					type = REAL;
 				}
+				else
+				{
+					if (!semantic_error_flag)
+						set_semantic_error("TYPE MISMATCH", to_string(line_number), "C3");
+				}
 			}
 			else
 			{
-				set_semantic_error("TYPE MISMATCH", to_string(line_number), "I1");
+				if (! semantic_error_flag)
+				set_semantic_error("TYPE MISMATCH", to_string(line_number), "C3");
 			}
 
 
@@ -371,6 +382,7 @@ int type_check(int op, int type1, int type2, int line_number)
 		}
 		else 
 		{
+			if (!semantic_error_flag)
 			set_semantic_error("TYPE MISMATCH", to_string(line_number), "C3");
 		}
 
@@ -385,6 +397,7 @@ int type_check(int op, int type1, int type2, int line_number)
 		}
 		else
 		{
+			if (!semantic_error_flag)
 			set_semantic_error("TYPE MISMATCH", to_string(line_number), "C4");
 		}
 
@@ -403,6 +416,7 @@ int type_check(int op, int type1, int type2, int line_number)
 			}
 			else
 			{
+				if (!semantic_error_flag)
 				set_semantic_error("TYPE MISMATCH", to_string(line_number), "C5");
 			}
 		}
@@ -414,6 +428,7 @@ int type_check(int op, int type1, int type2, int line_number)
 		}
 		else
 		{
+			if (!semantic_error_flag)
 			set_semantic_error("TYPE MISMATCH", to_string(line_number), "C6");
 		}
 	}
@@ -427,6 +442,7 @@ int type_check(int op, int type1, int type2, int line_number)
 		}
 		else
 		{
+			if (!semantic_error_flag)
 			set_semantic_error("TYPE MISMATCH", to_string(line_number), "C8");
 		}
 	}
@@ -670,13 +686,13 @@ void parse_stmt()
 		t2 = lexer.GetToken();
 		if (t2.token_type == EQUAL)
 		{
-			set_variable_to_defined(t1.lexeme);
 			//current_scope->var_is_defined.insert({ t1.lexeme, true }); // set variable to be defined
 			lhs_type = lookup_type(t1.lexeme, current_scope); // gets the left hand side 's type
 			lexer.UngetToken(t2);
 			lexer.UngetToken(t1);
 			rhs_type = parse_assign_stmt(); // set the right hand side 's 'should be' type
 			compare(lhs_type, rhs_type, t1.line_no);
+			set_variable_to_defined(t1.lexeme);
 		}
 		else
 		{
@@ -939,6 +955,7 @@ void parse_condition()
 		{
 			if (type != BOOLEAN) 
 			{
+				//if (!semantic_error_flag)
 				set_semantic_error("TYPE MISMATCH", to_string(t1.line_no), "C7");
 			}
 			
